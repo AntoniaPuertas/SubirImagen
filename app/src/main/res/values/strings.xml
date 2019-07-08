@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">SubirImagen</string>
+    <string name="elegir_imagen">Elegir imagen</string>
+    <string name="subir_servidor">Subir al servidor</string>
+    <string name="camara">Camara</string>
+    <string name="galeria">Galeria</string>
+</resources>
