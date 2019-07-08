@@ -8,6 +8,7 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
@@ -16,6 +17,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.webkit.PermissionRequest;
@@ -23,12 +25,28 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -143,7 +161,60 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void enviarServidor(){
-        Toast.makeText(MainActivity.this, "enviar al servidor", Toast.LENGTH_LONG).show();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        imagenSeleccionada.compress(Bitmap.CompressFormat.JPEG, 70, baos);
+        byte[] byteArray = baos.toByteArray();
+        String base64 = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+        Map<String, String> cuerpo = new HashMap<String, String>();
+        cuerpo.put("imagen_base64", base64);
+        JSONObject jsonObject = new JSONObject(cuerpo);
+
+        JsonObjectRequest peticion = new JsonObjectRequest(
+                Request.Method.POST,
+                "https://apcpruebas.es/toni/subir_imagenes",
+                jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // array disponible
+
+                        try {
+                            int resultado = response.getInt("estado");
+                            if(resultado == 0){
+                                Toast.makeText(MainActivity.this, "Imagen subida", Toast.LENGTH_LONG).show();
+                            }else{
+                                Toast.makeText(MainActivity.this, "Error al subir la imagen", Toast.LENGTH_LONG).show();
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                },new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+                Log.i("error subida imagen", error.toString());
+                Toast.makeText(MainActivity.this, "Error al subir la imagen", Toast.LENGTH_LONG).show();
+            }
+
+        })
+        {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Auto", "21232F297A57A5A743894A0E4A801FC3");
+                return headers;
+            }
+        };
+
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        requestQueue.add(peticion);
     }
 
     private void  solicitarPermiso(){
