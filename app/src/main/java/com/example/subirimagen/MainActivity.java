@@ -173,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
 
         JsonObjectRequest peticion = new JsonObjectRequest(
                 Request.Method.POST,
-                "https://apcpruebas.es/toni/subir_imagenes",
+                "https://apcpruebas.es/toni/subir_imagenes/index.php",
                 jsonObject,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -182,10 +182,11 @@ public class MainActivity extends AppCompatActivity {
 
                         try {
                             int resultado = response.getInt("estado");
+                            String mensaje = response.getString("mensaje");
                             if(resultado == 0){
-                                Toast.makeText(MainActivity.this, "Imagen subida", Toast.LENGTH_LONG).show();
+                                Toast.makeText(MainActivity.this, mensaje, Toast.LENGTH_LONG).show();
                             }else{
-                                Toast.makeText(MainActivity.this, "Error al subir la imagen", Toast.LENGTH_LONG).show();
+                                Toast.makeText(MainActivity.this, mensaje, Toast.LENGTH_LONG).show();
                             }
 
                         } catch (JSONException e) {
@@ -204,12 +205,14 @@ public class MainActivity extends AppCompatActivity {
 
         })
         {
+
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 HashMap<String, String> headers = new HashMap<String, String>();
                 headers.put("Auto", "21232F297A57A5A743894A0E4A801FC3");
                 return headers;
             }
+
         };
 
 
